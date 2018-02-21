@@ -1,0 +1,122 @@
+---
+title: "AML Assignment 1"
+author: "Yiting Wang"
+date: "2018-02-20"
+output: html_document
+---
+
+## Question 2
+
+```{r}
+# load data
+data <- read.csv("C:/Tahoe_Healthcare_Data.csv")
+View(data)
+```
+
+### (i)
+```{r}
+readmit <- sum(data$readmit30)
+readmit
+unit_loss <- 8000
+total_loss <- readmit * unit_loss
+total_loss
+```
+
+We take the dataset as representative of what will happen in a given year if nothing is done to reduce the readmissions rate. From the dataset, we can calculate the total number of re-admitted patients, which is 998. We mutiply this number by the loss per re-admitted patient \$8,000, and get the total lost of $7,984,000.
+
+### (ii)
+```{r}
+program_unit_cost <- 1200
+patients <- nrow(data)
+patients 
+program_total_cost <- patients * program_unit_cost
+program_total_cost
+
+reduce_rate <- 0.4
+saving <- total_loss * reduce_rate
+saving
+
+net_change <- program_total_cost - saving
+net_change
+```
+
+From the dataset we know there are total 4,382 patients in a given year. And the cost of CareTracker program is \$1,200 per patient. So if the hospital implements CareTracker for all patients, the total cost will be $5,258,400, which is a quite high figure. 
+
+And we know CareTracker reduced the incidence of readmissions by 40% in the pilot study, which means it can save 40% of the total loss we calculated in problem (i). So the hospital can save $3,193,600. (40% * 998 * 8000)
+
+The net change in cost is \$2,064,800. If the hospital implements CareTracker for each patient, the cost compared to status quo, will increase $2,064,800, which means the money hospital spends on implementing CareTracker is higher than the money it can save from CareTracker's results. 
+
+From an economic point of view, the hospital should not implement CareTracker for all AMI patients. Maybe it should choose some particular patients to implement CareTracker.
+
+### (iii)
+```{r}
+best_saving <- reduce_rate * readmit * unit_loss - readmit * program_unit_cost 
+best_saving
+```
+
+Suppose the hospital can find all the 998 re-admitted patients correctly, and implement CareTracker to them (cost is \$1,200 per patient), which will cost \$1,197,600. However, 40% of the 998 re-admitted patients will be free from readmission, and each will save \$8,000, so the total saving is \$3,193,600. So the upper bound on the possible savings should be $1,996,000. The hospital cannot expect to make more savings by implementing CareTracker.
+
+### (iv)
+```{r}
+library(dplyr)
+
+outcome = matrix(NA, nrow = 76, ncol = 2)
+
+for (s in 25:100) {
+  data_new <- data %>% mutate(estimate = ifelse(severity.score >= s, 1, 0))
+  cost <- 1200 * sum(data_new$estimate)
+  save <- (sum(data_new$readmit30 + data_new$estimate == 2)) * 0.4 * 8000
+  net <- save - cost
+  outcome[s - 24, 1] = s
+  outcome[s - 24, 2] = net
+}
+
+plot(outcome[,1], outcome[,2], type = "l", xlab = "S*", ylab = "savings")
+
+max_saving <- max(outcome[,2])
+max_saving
+
+best_s <- outcome[,1][which(outcome[,2] == max_saving)]
+best_s
+```
+
+From the graph and outcome matrix, we can find out that the best value for the threshold S* is 42, under this circumstance, hospital can obtain a cost savings of $136,800 over the status quo.
+
+
+### (v)
+```{r}
+glm.fit <- glm(readmit30 ~ age + female + flu_season + ed_admit + severity.score + comorbidity.score, data = data, family = binomial)
+
+summary(glm.fit)
+
+```
+
+
+### (vi)
+```{r}
+data <- data %>% mutate(fit = predict(glm.fit, data, type = "response"))
+
+outcome2 <- matrix(NA, nrow = 81, ncol = 2)
+
+n = 0
+
+for (p in seq(0.1, 0.9, by = 0.01)) {
+  data_new <- data %>% mutate(estimate = ifelse(fit >= p, 1, 0))
+  cost <- 1200 * sum(data_new$estimate)
+  save <- (sum(data_new$readmit30 + data_new$estimate == 2)) * 0.4 * 8000
+  net <- save - cost
+  n = n + 1
+  outcome2[n, 1] = p
+  outcome2[n, 2] = net
+}
+
+plot(outcome2[,1], outcome2[,2], type = "l", xlab = "p*", ylab = "savings")
+
+max_saving2 <- max(outcome2[,2])
+max_saving2
+
+best_s <- outcome2[,1][which(outcome2[,2] == max_saving2)]
+best_s
+```
+
+From the graph and outcome matrix, we can find out that the best value for the threshold p* is 0.4, under this circumstance, hospital can obtain a cost savings of $495,200 over the status quo.
