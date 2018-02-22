@@ -1,6 +1,7 @@
 ---
 title: "AML Assignment 1"
-author: "Yiting Wang, Tyler Deroin"
+subtitle: "Yiting Wang, Tyler Deroin, Sarah Laouiti"
+author: "CID: 01423116, 01404042, 01429506"
 date: "2018-02-22"
 output: html_document
 ---
@@ -95,9 +96,9 @@ net_change <- program_total_cost - saving
 net_change
 ```
 
-From the dataset we know there are total 4,382 patients in a given year. And the cost of CareTracker program is \$1,200 per patient. So if the hospital implements CareTracker for all patients, the total cost will be $5,258,400, which is a quite high figure. 
+From the dataset, we know there are total 4,382 patients in a given year and the cost of CareTracker program is \$1,200 per patient. Therefore, the hospital implements CareTracker for all patients, the total cost will be $5,258,400, which is a quite high figure. 
 
-And we know CareTracker reduced the incidence of readmissions by 40% in the pilot study, which means it can save 40% of the total loss we calculated in problem (i). So the hospital can save $3,193,600. (40% * 998 * 8000)
+And we know CareTracker reduced the incidence of readmissions by 40% in the pilot study, which means it can save 40% of the total loss we calculated in problem (i). So the hospital can save $3,193,600.
 
 The net change in cost is \$2,064,800. If the hospital implements CareTracker for each patient, the cost compared to status quo, will increase $2,064,800, which means the money hospital spends on implementing CareTracker is higher than the money it can save from CareTracker's results. 
 
@@ -116,7 +117,7 @@ Suppose the hospital can find all the 998 re-admitted patients correctly, and im
 outcome = matrix(NA, nrow = 76, ncol = 2)
 
 for (s in 25:100) {
-  data_new <- data %>% mutate(estimate = ifelse(severity.score >= s, 1, 0))
+  data_new <- data %>% mutate(estimate = ifelse(severity.score > s, 1, 0))
   cost <- 1200 * sum(data_new$estimate)
   save <- (sum(data_new$readmit30 + data_new$estimate == 2)) * 0.4 * 8000
   net <- save - cost
@@ -129,11 +130,14 @@ plot(outcome[,1], outcome[,2], type = "l", xlab = "S*", ylab = "savings")
 max_saving <- max(outcome[,2])
 max_saving
 
+#Cost savings where S* = 50
+outcome[26,][2]
+
 best_s <- outcome[,1][which(outcome[,2] == max_saving)]
 best_s
 ```
 
-From the graph and outcome matrix, we can find out that the best value for the threshold S* is 42, under this circumstance, hospital can obtain a cost savings of $136,800 over the status quo.
+From the graph and outcome matrix, we can find out that the best value for the threshold S* is 41, under this circumstance, hospital can obtain a cost savings of $136,800 over the status quo.
 
 
 ### (v)
@@ -154,7 +158,7 @@ outcome2 <- matrix(NA, nrow = 81, ncol = 2)
 n = 0
 
 for (p in seq(0.1, 0.9, by = 0.01)) {
-  data_new <- data %>% mutate(estimate = ifelse(fit >= p, 1, 0))
+  data_new <- data %>% mutate(estimate = ifelse(fit > p, 1, 0))
   cost <- 1200 * sum(data_new$estimate)
   save <- (sum(data_new$readmit30 + data_new$estimate == 2)) * 0.4 * 8000
   net <- save - cost
@@ -167,6 +171,9 @@ plot(outcome2[,1], outcome2[,2], type = "l", xlab = "p*", ylab = "savings")
 
 max_saving2 <- max(outcome2[,2])
 max_saving2
+
+#outcome of p* = .6
+outcome2[51,][2]
 
 best_s <- outcome2[,1][which(outcome2[,2] == max_saving2)]
 best_s
@@ -183,18 +190,23 @@ $$\sum_{i = 1}^n(y_i - \beta_0 - \sum_{j-1}^p \beta_j x_{ij})^2 + \lambda \sum_{
 for a particular $\lambda$.  For parts (a) through (e), indicate which of (i) through (V) is correct. Justify your answer
 
 
-### (a) As we increase $\lambda$ from 0, the training RSS will:
 
-### (b) Repeat (a) for test RSS
+(a) As we increase $\lambda$ from 0, the training RSS will:
 
-### (c) Repeat (a) for variance
+$Steadily \space increase.$ $\lambda$ is a tuning paramater which shrinks the $\beta$ coefficients thus placing strain on the model. As it increases, given the RSS equation, the smaller the $\beta$ coefficients will become and as a result the RSS will become larger.
+    
+(b) Repeat (a) for test RSS.
 
-Decrease
+$Decrease \space initially, \space and \space then \space eventually \space start \space increasing \space in \space a \space U \space shape.$ In first instance 'false' coefficients are forced to 0, test RSS will decrease as the resulting model overfits less. However, there will reach a point where those irrelevant coefficients will have all been removed from the model, and, as per a), the RSS will increase.  Additionally, as the penalty term removes variance and introduces bias.  Initially, this is effective as more variance is removed than bias introduced. Eventually, bias introduced is greater than the variance removed and test RSS begins increasing.
 
-### (d) Repeat (a) for squared bias
+(c) Repeat (a) for variance (of predicted values on test data where the x's are random).
 
-Increases
+$Steadily \space decrease.$ As $\lambda$ increases and $\beta$ coefficients decrease, the less complex the model. In other words, the flexibility of the model fit decreases and variance decreases.
 
-### (e) Repeat (a) for irreducible error.
+(d) Repeat (a) for (squared) bias.
 
-By definition, the irreducible error will remain constant.
+$Steadily \space increase$. As per c), variance would increase as $\lambda$ increases. Given the innate trade-off between variance and bias, it is expected that as variance decreases bias would increase.
+
+(e) Repeat (a) for the irreducible error.
+
+$Remain \space constant.$ As stated by the name, the irreducible error cannot be reduced by model selection or coefficients.
