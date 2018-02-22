@@ -1,9 +1,64 @@
 ---
 title: "AML Assignment 1"
-author: "Yiting Wang"
-date: "2018-02-20"
+author: "Yiting Wang, Tyler Deroin"
+date: "2018-02-22"
 output: html_document
 ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(readr)
+library(dplyr)
+
+
+```
+
+```{r data, warning=FALSE, message=FALSE, include=FALSE}
+q1_a <- read_csv("q1_a.csv")
+q1_b <- read_csv("q1_b.csv")
+q1_c <- read_csv("q1_c.csv")
+```
+
+## Question 1
+For (a), 
+
+```{r part_a}
+#Initial
+ggplot(q1_a, aes(x = x1, y = x2, col = col, shape = col))+ geom_point() + ggtitle("Initial A") + scale_color_manual(values = c("black","blue")) + theme(legend.position = "none") + scale_shape_manual(values = c(18,15 ))
+
+#Transform
+a_new <- q1_a %>% mutate(y1 = sqrt((x1 * x1) + (x2 * x2)))
+
+#New plot with line
+ggplot(a_new, aes(x = x1, y = y1,  col = col, shape = col)) + geom_point() + ggtitle("New A") + scale_color_manual(values = c("black","blue")) + theme(legend.position = "none") + geom_abline(slope = 0, intercept = 2, color = "red") + scale_shape_manual(values = c(18,15 ))
+```
+
+For (b),
+
+```{r part_b}
+#Initial
+ggplot(q1_b, aes(x = x1, y = x2, col = col, shape = col))+ geom_point() + ggtitle("Initial B") + scale_color_manual(values = c("black","blue")) + theme(legend.position = "none") + scale_shape_manual(values = c(18,15 ))
+
+#Transform
+b_new <- q1_b %>%  mutate(y1 = x1 * x2)
+
+#New plot with line
+ggplot(b_new, aes(x = x1, y = y1, col = col, shape = col)) + geom_point() + ggtitle("New B") + scale_color_manual(values = c("black","blue")) + theme(legend.position = "none") + geom_abline(slope = 0, intercept = 0, color = "red") + scale_shape_manual(values = c(18,15 ))
+```
+
+For (c), 
+
+```{r part_c}
+#Initial
+ggplot(q1_c, aes(x = x1, y = x2, col = col, shape = col))+ geom_point() + ggtitle("Initial C") + scale_color_manual(values = c("black","blue")) + theme(legend.position = "none") + scale_shape_manual(values = c(18,15 ))
+
+#Transform
+c_new <- q1_c %>% mutate(y1 = x1 * x1) 
+
+#New plot with line
+ggplot(c_new, aes(x = x1, y = y1, col = col, shape = col)) + geom_point() + ggtitle("New C") + scale_color_manual(values = c("black","blue")) + scale_shape_manual(values = c(18,15 )) + theme(legend.position = "none") + geom_abline(slope = 0, intercept = 2, color = "red")
+```
+
 
 ## Question 2
 
