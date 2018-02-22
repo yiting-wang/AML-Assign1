@@ -177,13 +177,23 @@ From the graph and outcome matrix, we can find out that the best value for the t
 
 ## Question 3
 
+Suppose we esimate the regression coefficients in a linear regression model by minimizing 
+
+$$\sum_{i = 1}^n(y_i - \beta_0 - \sum_{j-1}^p \beta_j x_{ij})^2 + \lambda \sum_{j=1}^p \beta_j^2$$
+for a particular $\lambda$.  For parts (a) through (e), indicate which of (i) through (V) is correct. Justify your answer
+
+
 ### (a) As we increase $\lambda$ from 0, the training RSS will:
 
 ### (b) Repeat (a) for test RSS
 
 ### (c) Repeat (a) for variance
 
+Decrease
+
 ### (d) Repeat (a) for squared bias
+
+Increases
 
 ### (e) Repeat (a) for irreducible error.
 
