@@ -173,3 +173,18 @@ best_s
 ```
 
 From the graph and outcome matrix, we can find out that the best value for the threshold p* is 0.4, under this circumstance, hospital can obtain a cost savings of $495,200 over the status quo.
+
+
+## Question 3
+
+### (a) As we increase $\lambda$ from 0, the training RSS will:
+
+### (b) Repeat (a) for test RSS
+
+### (c) Repeat (a) for variance
+
+### (d) Repeat (a) for squared bias
+
+### (e) Repeat (a) for irreducible error.
+
+By definition, the irreducible error will remain constant.
