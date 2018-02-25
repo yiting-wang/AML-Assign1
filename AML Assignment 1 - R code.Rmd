@@ -197,7 +197,7 @@ $Steadily \space increase.$ $\lambda$ is a tuning paramater which shrinks the $\
     
 (b) Repeat (a) for test RSS.
 
-$Decrease \space initially, \space and \space then \space eventually \space start \space increasing \space in \space a \space U \space shape.$ In first instance 'false' coefficients are forced to 0, test RSS will decrease as the resulting model overfits less. However, there will reach a point where those irrelevant coefficients will have all been removed from the model, and, as per a), the RSS will increase.  Additionally, as the penalty term removes variance and introduces bias.  Initially, this is effective as more variance is removed than bias introduced. Eventually, bias introduced is greater than the variance removed and test RSS begins increasing.
+$Decrease \space initially, \space and \space then \space eventually \space start \space increasing \space in \space a \space U \space shape.$ At first, 'false' coefficients are forced to 0 and test RSS will decrease as the resulting model overfits less. However, there will reach a point where those irrelevant coefficients will have all been removed from the model, and, as per a), the RSS will increase.  Additionally, as the penalty term removes variance and introduces bias.  Initially, this is effective as more variance is removed than bias introduced. Eventually, bias introduced is greater than the variance removed and test RSS begins increasing.
 
 (c) Repeat (a) for variance (of predicted values on test data where the x's are random).
 
