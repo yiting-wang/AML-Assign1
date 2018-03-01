@@ -50,12 +50,12 @@ The city want to estimate $p$, the proportion of parked cars in violation of the
 Stratified random sampling ensures each subgroup (in this case, block) within the population receives proper representation within the sample.
 
 ### (iii)
-not reasonable 
+not reasonable???
 www.promesa.co.nz/Help/EP_est_stratified_random_sample.htm
 
 ### (iv)
-biased
-need an example...
+biased...
+need an example...???
 
 ## Question 3
 
@@ -66,7 +66,51 @@ data = data.frame(
   z = c(12,8,9,16,7,15,10,15,6,12,8,14))
 
 estimate_p <- sum(data$x)/sum(data$z)
+estimate_p 
 ```
 
 The city¡¯s $\widetilde p$ of the citywide ¡°scofflaw¡± rate $p$ is about $25.8%$.
+
+### (ii)
+
+If we use bootstrapping, we can easily calculate the level of sampling error (margin of error???)
+
+"If one estimated the citywide ¡°scofflaw¡± rate by the ratio ¡°cars in violation/cars at meters¡± for all the blocks combined, what level of sampling error attends the result? That is a fairly straightforward problem with bootstrapping, but quite an intractable one without it."
+
+link: https://www.informs.org/ORMS-Today/Public-Articles/June-Volume-42-Number-3/Innovative-Education-Probability-as-a-reality-show
+
+
+### (iii)
+
+
+### (iv)
+
+```{r}
+library(boot)
+
+boot.fn = function(data,index){
+  x = data$x[index]
+  z = data$z[index]
+  return(sum(x)/sum(z))
+}
+
+set.seed(1)
+boot_result <- boot(data, boot.fn, 1000)
+boot_result
+```
+
+###(v)
+
+```{r}
+SE <- 0.02864137
+lower <- estimate_p - 1.96*SE
+upper <- estimate_p + 1.96*SE
+cat("95% confidence interval for p is [", lower, ",", upper , "]" )
+```
+
+### (vi)
+
+```{r}
+
+```
 
