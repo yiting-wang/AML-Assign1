@@ -1,0 +1,42 @@
+---
+title: "Assign2"
+author: "Yiting Wang"
+date: "2018-Feb-28"
+output: html_document
+---
+
+## Question 1
+
+### (i)
+
+$X^TX$ is a $(d+1) * (d+1)$ matrix and can be written as a sum of the form $\sum_{i=1}^N z_i^Tz_i$ where $z_i$ is a 1 * (d + 1) vector:
+$$z_i = \left[
+ \begin{matrix}
+   1 & x_{i1} & x_{i2} & ... & x_{id}
+  \end{matrix}
+  \right]$$
+$z_i$ represents one data point. We can query every data point from 1 to N from the database, calculate $z_i^Tz_i$ and then sum all of them to get $X^TX$.
+
+
+### (ii)
+
+First, for $X^TX$, we need to keep only $O(d^2)$ numbers in the database. According to (i), when a new datapoint $x_k$ arrives at time $t_k$, to get an updated $X^TX$, we only need to add $z_k^Tz_k$ on the previous $X^TX$. $X^TX$ is still a $(d+1) * (d+1)$ matrix, and the memory for saving $X^TX$ is always $O(d^2)$.
+
+Second, for $X^Ty$,we also need to keep only $O(d^2)$ numbers in the database. $X^Ty$ is a $(d+1)*1$ matrix and can be written as a sum of the form $\sum_{i=1}^N z_i^Ty_i$. Similarly, when a new datapoint $x_k$ arrives at time $t_k$, to get an updated $X^Ty$, we only need to add $z_k^Ty_k$ on the previous $X^Ty$. $X^Ty$ is still a $(d+1) * 1$ matrix, and the memory for saving $X^Ty$ is always $O(d)$.
+
+Since $\beta^* = (X^TX+ \lambda I)^{-1}X^Ty$, and $X^TX$ and $X^Ty$ can be save in the database with only $O(d^2)$ numbers, even the data points grow sequentially, we find a way to compute $\beta^*$ while keeping only $O(d^2)$ numbers in the database.
+
+### (iii)
+
+Let $M_N = (X^TX + \lambda I)$, $M_N$ is a $(d+1) * (d+1)$ matrix. $M_N$ can be written as:
+$$M_N = \sum_{i=1}^N z_i^Tz_i + \lambda I$$
+
+$M_{N+1}$ can be written as:
+$$M_{N+1} = \sum_{i=1}^N z_i^Tz_i + z_{N+1}^T\space z_{N+1} + \lambda I = M_N + z_{N+1}^T\space z_{N+1}$$
+According to Sherman-Morrison-Woodbury identity, $(M_{N+1})^{-1}$ can be written as:
+
+$$(M_{N+1})^{-1} = (M_N)^{-1} - \frac{(M_N)^{-1}\space z_{N+1}^T\space z_{N+1}\space (M_N)^{-1}}{1 + z_{N+1}\space (M_N)^{-1}\space z_{N+1}^T}$$  
+When a new observation $X_{N+1}$ is given, we can use the above formula to calcuate $(M_{N+1})^{-1}$. $(M_N)^{-1}$ is already computed in previous calculation. So$(M_{N+1})^{-1}$ can be computed within $O(d^2)$ time. (***not sure how to prove)
+
+
+
