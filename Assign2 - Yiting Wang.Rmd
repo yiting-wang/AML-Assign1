@@ -71,11 +71,33 @@ estimate_p <- sum(data$x)/sum(data$z)
 
 The city??s $\widetilde p$ of the citywide ??scofflaw?? rate $p$ is about $25.8%$.
 
+### (ii)
+
+### (iii)
+
+### (iv)
+
+```{r}
+
+boot(data = data, statistic = , R = 1000)
+```
+
+
+### (v)
+
+### (vi)
+
+
+
 ## Question 4
-```{r, message=FALSE, include=FALSE}
+```{r, message=TRUE, include=FALSE}
 library(readr)
 library(ISLR)
+library(boot)
 library(tree)
+library(glmnet)
+library(randomForest)
+library(dplyr)
 tahoe <- read_csv("Tahoe_Healthcare_Data.csv")
 
 #Split 80% training data and 20% test data
@@ -83,6 +105,10 @@ set.seed(123)
 sample <- sample.int(n = nrow(tahoe), size = floor(.8*nrow(tahoe)), replace = F)
 train <- tahoe[sample,]
 test <- tahoe[-sample,]
+train_x <- train %>% select(-readmit30)
+train_y <- train$readmit30
+test_x <- test %>% select(-readmit30)
+test_y <- train$readmit30
 #5 fold cross validation
 #Report results on test data
 ```
@@ -91,11 +117,8 @@ test <- tahoe[-sample,]
 
 ### Logistic Regression
 ```{r}
-#Example in chapter 4
-#glmnet package
-#with alpha = 1
-#family = binomial"
-
+cv.glmmod <- cv.glmnet(as.matrix(train_x), y=train_y, alpha=1, nfolds = 5)
+plot(cv.glmmod)
 ```
 
 
@@ -104,15 +127,22 @@ test <- tahoe[-sample,]
 
 ```{r}
 #Example in chapter 8
+
+
+cv.tree
 ```
 
 
 ### Bagging
 ```{r}
-
+#Chapter 8
 ```
 
 
 
 ### Random forests
+```{r}
+#Chapter 8
+
+```
 
