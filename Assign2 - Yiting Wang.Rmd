@@ -72,12 +72,47 @@ estimate_p <- sum(data$x)/sum(data$z)
 The city??s $\widetilde p$ of the citywide ??scofflaw?? rate $p$ is about $25.8%$.
 
 ## Question 4
+```{r, message=FALSE, include=FALSE}
+library(readr)
+library(ISLR)
+library(tree)
+tahoe <- read_csv("Tahoe_Healthcare_Data.csv")
+
+#Split 80% training data and 20% test data
+set.seed(123)
+sample <- sample.int(n = nrow(tahoe), size = floor(.8*nrow(tahoe)), replace = F)
+train <- tahoe[sample,]
+test <- tahoe[-sample,]
+#5 fold cross validation
+#Report results on test data
+```
+
+
 
 ### Logistic Regression
+```{r}
+#Example in chapter 4
+#glmnet package
+#with alpha = 1
+#family = binomial"
+
+```
+
+
 
 ### Classification Trees
 
+```{r}
+#Example in chapter 8
+```
+
+
 ### Bagging
+```{r}
+
+```
+
+
 
 ### Random forests
 
