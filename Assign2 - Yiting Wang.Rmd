@@ -1,7 +1,8 @@
 ---
-title: "Assign2"
-author: "Yiting Wang"
-date: "2018-Feb-28"
+title: "AML Assignment 2"
+subtitle: "Yiting Wang, Tyler Deroin, Sarah Laouiti"
+author: "CID: 01423116, 01404042, 01429506"
+date: "2018-03-06"
 output: html_document
 ---
 
@@ -68,5 +69,15 @@ data = data.frame(
 estimate_p <- sum(data$x)/sum(data$z)
 ```
 
-The city¡¯s $\widetilde p$ of the citywide ¡°scofflaw¡± rate $p$ is about $25.8%$.
+The city??s $\widetilde p$ of the citywide ??scofflaw?? rate $p$ is about $25.8%$.
+
+## Question 4
+
+### Logistic Regression
+
+### Classification Trees
+
+### Bagging
+
+### Random forests
 
