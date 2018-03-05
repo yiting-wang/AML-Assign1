@@ -1,0 +1,272 @@
+---
+title: "AML Assignment 2"
+subtitle: "Yiting Wang, Tyler Deroin, Sarah Laouiti"
+author: "CID: 01423116, 01404042, 01429506"
+date: "2018-03-03"
+output: html_document
+---
+
+## Question 1
+
+### (i)
+
+$X^TX$ is a $(d+1) * (d+1)$ matrix and can be written as a sum of the form $\sum_{i=1}^N z_i^Tz_i$ where $z_i$ is a 1 * (d + 1) vector:
+$$z_i = \left[
+ \begin{matrix}
+   1 & x_{i1} & x_{i2} & ... & x_{id}
+  \end{matrix}
+  \right]$$
+$z_i$ represents one data point. We can query every data point from 1 to N from the database, calculate $z_i^Tz_i$ and then sum all of them to get $X^TX$.
+
+### (ii)
+
+First, for $X^TX$, we need to keep only $O(d^2)$ numbers in the database. According to (i), when a new datapoint $x_k$ arrives at time $t_k$, to get an updated $X^TX$, we only need to add $z_k^Tz_k$ on the previous $X^TX$. $X^TX$ is still a $(d+1) * (d+1)$ matrix, and the memory for saving $X^TX$ is always $O(d^2)$.
+
+Second, for $X^Ty$,we also need to keep only $O(d^2)$ numbers in the database. When there are $(k-1)$ data points, $X^Ty$ is a $(d+1)*1$ matrix and can be written as a sum of the form $\sum_{i=1}^N z_i^Ty_i$. Similarly, when a new datapoint $x_k$ arrives at time $t_k$, to get an updated $X^Ty$, we only need to add $z_k^Ty_k$ on the previous $X^Ty$. $X^Ty$ is still a $(d+1) * 1$ matrix, and the memory for saving $X^Ty$ is always $O(d)$.
+
+Since $\beta^* = (X^TX+ \lambda I)^{-1}X^Ty$, and $X^TX$ and $X^Ty$ can be save in the database with only $O(d^2)$ numbers, even the data points grow sequentially, we find a way to compute $\beta^*$ while keeping only $O(d^2)$ numbers in the database.
+
+### (iii)
+
+Suppose currently we have $(n-1)$ observations. Let $M_{n-1} = (X^TX + \lambda I)$, $M_{n-1}$ is a $(d+1)*(d+1)$ matrix. $M_{n-1}$ can be written as:
+$$M_{n-1} = \sum_{i=1}^{n-1} z_i^Tz_i + \lambda I$$
+Then we have a new observation $x_n$. $M_n$ can be written as:
+$$M_n = \sum_{i=1}^{n-1} z_i^Tz_i + z_n^T\space z_n + \lambda I = M_{n-1} + z_n^T\space z_n$$
+According to Sherman-Morrison-Woodbury identity, $(M_n)^{-1}$ can be written as:
+
+$$(M_n)^{-1} = (M_{n-1})^{-1} - \frac{(M_{n-1})^{-1}\space z_n^T\space z_n\space (M_{n-1})^{-1}}{1 + z_n\space (M_{n-1})^{-1}\space z_n^T}$$  
+When a new observation $x_n$ is given, we can use the above formula to calcuate $(M_n)^{-1}$ as we already have the known; $(M_{n-1})^{-1}$ is a $(d+1)*(d+1)$ matrix already computed in previous calculation. 
+
+For the numerator, $(M_{n-1})^{-1}\space z_n^T$ is a $(d+1)*(d+1)$ matrix mutiplies $(d+1)*1$ vector with $O(d^2)$ time complexity and the result is a $(d+1)*1$ vector. Next, we have $z_n\space (M_{n-1})^{-1}$ is a $1*(d+1)$ vector mutiplied by a $(d+1)*(d+1)$ matrix with $O(d^2)$ time complexity and the result is a $1*(d+1)$ vector. Finally, $(M_{n-1})^{-1}\space z_n^T\space z_n\space (M_{n-1})^{-1}$ is then converted to a $(d+1)*1$ vector multiplied by a $1*(d+1)$ vector with $O(d^2)$ time complexity, and the result is a $(d+1)*(d+1)$ matrix.
+
+For the denominator, we already knew the result of $z_n\space (M_{n-1})^{-1}$ is a $1*(d+1)$ vector with $O(d^2)$ time complexity. Therefore, $z_n\space (M_{n-1})^{-1}\space z_n^T$ is converted to a $1*(d+1)$ vector multiplied by a $(d+1)*1$ vector with $O(d)$ time complexity and the result is a single number.
+
+When we divide the numerator ($(d+1)*(d+1)$ matrix) by the denominator (a single number), the process takes $O(d^2)$ time complexity and the result is a $(d+1)*(d+1)$ matrix. 
+
+In conclusion, when a new observation $x_n$ is given, there exists a way to convert $(M_n)^{-1}$ into a formula including $(M_{n-1})^{-1}$, $z_n$ and $z_n^T$, and then compute the result of $(M_n)^{-1}$ within $O(d^2)$ time.
+
+
+## Question 2
+
+### (i)
+
+$\widetilde p$ is approximating for the "scofflaw rate" $p$. The latter represents the fraction of cars parking without paying the meters the entire population of parked cars in Chicago. As it is inefficient and expensive to collect information for the entire population, $\widetilde p$ uses a random sample of blocks and time interval to find a representative estimate of $p$.
+
+###(ii)
+
+The methodology behind calculating $\widetilde p$ ensures each subgroup (in this case, block) within the population equal changce of being selected for representation within the sample. In other words, the estimate would be an appropriate representation of the true population "scofflaw rate".
+
+### (iii)
+
+No. Working out the margin of error would entail bootstraping the sample, and the bootstraping samples are dependent because they come from the same underlying dataset. Additionally, the distribution of $\widetilde p^b_i$ does not satisfy a condition implied when using the usual formula: normal distribution. It may not be symmetrical around zero, thus would not perform well on a highly skewed distribution. Using percentile or expanded percentile of bootstrap distribution to compute CIs are more applicable. 
+
+### (iv)
+
+```{r}
+all <- data.frame(x = c(3,4,6), z = c(12,14,200))
+p <-  sum(all$x)/sum(all$z)
+cat("The true p is:", p)
+
+set.seed(1)
+outcome = c(1:100)
+for (i in 1:100) {
+  a <- sample(all$x, 2)
+  z_1 <- all[all$x == a[1],2]
+  z_2 <- all[all$x == a[2],2]
+  outcome[i] = sum(a)/sum(z_1,z_2)
+}
+
+expect_p <- mean(outcome)
+cat("The expectation for tilde p estimate is:", expect_p)
+
+#expect_p == p
+cat("The difference between expectation and true: ",expect_p - p)
+```
+
+$\widetilde p$ is a biased estimate of $p$. Here's an example:
+
+Imagine a city that has three blocks with parking meters, two of which will be sampled at random. The true $p$ can be computed using all three blocks' data. The $E[\widetilde p]$ can be computed by averaging all $\widetilde p_i$ from the randomly selected samples (we run 100 times random selection here).
+
+Comparing the result of $p$ and $E[\widetilde p]$, we get the conclusion that the two numbers can be very different. They are definitely not similar or close and $\widetilde p$ is not an unbiased estimator for $p$.
+
+## Question 3
+
+### (i)
+
+```{r}
+data = data.frame(
+  x = c(4,3,3,3,2,4,4,3,2,1,3,2), 
+  z = c(12,8,9,16,7,15,10,15,6,12,8,14))
+
+estimate_p <- sum(data$x)/sum(data$z)
+estimate_p 
+```
+
+The city's $\widetilde p$ of the citywide scofflaw rate $p$ is about $25.76%$.
+
+### (ii)
+
+Since we do not know the detailed population data to calculate $p$ and only have a single small sample (12 blocks), we can use bootstrapping to enable us to calculate a more appropriate or representative estimate as well as the related variance of the sampling error.
+
+### (iii)
+
+We would expect the bootstrapped distribution of $(X,Z)$ to resemble the original distribution of the initial 12 samples.  This is due to the bootstrap analysis being built on these 12 samples.
+
+### (iv)
+
+```{r}
+library(boot)
+
+boot.fn = function(data,i){
+  x = data$x[i]
+  z = data$z[i]
+  return(sum(x)/sum(z))
+}
+
+set.seed(1)
+boot_result <- boot(data, boot.fn, 1000)
+boot_result
+# plot(boot_result)
+# boot_result$t 
+```
+
+The estimation procedure does not seem to suffer an appreciable bias - less than 0.002.
+
+###(v)
+
+```{r}
+boot.ci(boot_result) # all types of CI
+# another method for (v) by Yiting
+q_u <- quantile(boot_result$t, 0.975)
+q_u
+q_l <- quantile(boot_result$t, 0.025)
+q_l
+
+cat("The adjusted confidence interval is:",(2 * boot_result$t0) - q_u, (2 * boot_result$t0) - q_l)
+```
+
+### (vi)
+
+```{r}
+plot(boot_result)
+
+#extract p^B for each bootstrap sample and plot histogram
+plot(density(boot_result$t), lwd = 3, col = "steelblue")
+```
+
+Usually we first compute the "raw" confidence interval $[q_l, q_u]$, and then adjusting for bias and asymmetry in bootstrap distribution to get a more accurate confidence interval, $[2\widetilde{p} - q_u, 2\widetilde{p} + q_l]$. But in this case, adjusting the bootstrap estimate of the "raw" confidence interval is not important because the distribution of $\widetilde{p}^b$ is almost normal distribution. 
+
+In the histogram, there's very little bias in the bootstrap samples and the distribution looks symmetric. If so, $\widetilde{p} \approx \frac{q_l + q_u}{2}$, and $[2\widetilde{p} - q_u, 2\widetilde{p} + q_l]$ will be almost identical to $[q_l, q_u]$.
+
+
+## Question 4
+```{r, message=TRUE, include=FALSE}
+library(readr)
+library(ISLR)
+library(boot)
+library(tree)
+library(glmnet)
+library(plyr)
+library(randomForest)
+library(dplyr)
+library(caret)
+tahoe <- read.csv("Tahoe_Healthcare_Data.csv")
+tahoe$readmit30 <- factor(tahoe$readmit30)
+
+#Split 80% training data and 20% test data
+set.seed(123)
+sample <- sample.int(n = nrow(tahoe), size = floor(.8*nrow(tahoe)), replace = F)
+train <- tahoe[sample,]
+test <- tahoe[-sample,]
+train_x <- as.matrix(train[1:6])
+train_y <- as.matrix(train$readmit30)
+test_x <- as.matrix(test[1:6])
+test_y <- as.matrix(test$readmit30)
+#5 fold cross validation
+
+cv_splits <- createFolds(y = train_y, k = 5)
+str(cv_splits)
+control <- trainControl(method = "cv", number = 5)
+#Report results on test data
+```
+
+
+
+### Logistic Regression
+```{r}
+set.seed(123)
+cv.glmmod <- cv.glmnet(x = train_x, y=train_y, alpha=1, family = "binomial", nfolds = 5)
+
+log.predict <- as.numeric(predict(cv.glmmod, newx = as.matrix(test_x), s = "lambda.min", type = "class"))
+#compare predictions to test data
+sum(log.predict == test_y) / length(test_y)
+#confusion matrix 
+table(log.predict, test_y)
+```
+
+
+
+### Classification Trees
+
+```{r}
+set.seed(123)
+#Build base model
+tree.model <- tree(readmit30~., data = train)
+#tune under cross validation for number of nodes
+cv.model <- cv.tree(object = tree.model, K = 5)
+#Decide best size (# of nodes)
+best.size <- cv.model$size[which(cv.model$dev==min(cv.model$dev))]
+#prune based on best.size
+cv.model.pruned <- prune.misclass(tree.model, best=best.size)
+#predict with prune model
+tree.predict <- predict(cv.model.pruned, as.data.frame(test_x), type="class")
+
+#Results
+sum(tree.predict == test_y)/ length(test_y)
+table(tree.predict, test_y)
+```
+
+
+### Bagging
+```{r}
+set.seed(123)
+#Random forest function but mtry = number of explanatory variables
+
+bg <- randomForest(readmit30 ~ ., data = train, mtry = 6, importance = TRUE)
+# prediction
+p3 <- predict(bg, newdata = test_x, type = "class")
+
+# performance on test set
+sum(p3 == test_y) / nrow(test_y)
+
+# confusion matrix
+table(p3, test_y)
+
+
+
+```
+
+
+
+### Random forests
+```{r}
+set.seed(123)
+#possible values of mtry
+rf_grid <- expand.grid(mtry= c(1,2,3,4,5,6))
+#train under cv and possible mtry
+rf <- train(readmit30~., data = train, method = "rf", tuneGrid = rf_grid, trControl = control)
+#besttune for mtry value
+final <- randomForest(readmit30~., data = train, mtry = as.numeric(rf$bestTune[1]))
+
+#Predict
+rf.predict <- predict(final, newdata = as.data.frame(test_x), type = "class")
+
+#Results
+sum(rf.predict == test_y)/length(test_y)
+table(tree.predict, test_y)
+```
+
+
+There is not a single clear winner.  Each of the 4 methods achieve around 78-80% accuracy logistic regression topping all of the others. This may be due to the limited dataset.
+
+

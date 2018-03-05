@@ -96,20 +96,27 @@ library(ISLR)
 library(boot)
 library(tree)
 library(glmnet)
+library(plyr)
 library(randomForest)
 library(dplyr)
-tahoe <- read_csv("Tahoe_Healthcare_Data.csv")
+library(caret)
+tahoe <- read.csv("Tahoe_Healthcare_Data.csv")
+tahoe$readmit30 <- factor(tahoe$readmit30)
 
 #Split 80% training data and 20% test data
 set.seed(123)
 sample <- sample.int(n = nrow(tahoe), size = floor(.8*nrow(tahoe)), replace = F)
 train <- tahoe[sample,]
 test <- tahoe[-sample,]
-train_x <- train %>% select(-readmit30)
-train_y <- train$readmit30
-test_x <- test %>% select(-readmit30)
-test_y <- train$readmit30
+train_x <- as.matrix(train[1:6])
+train_y <- as.matrix(train$readmit30)
+test_x <- as.matrix(test[1:6])
+test_y <- as.matrix(test$readmit30)
 #5 fold cross validation
+
+cv_splits <- createFolds(y = train_y, k = 5)
+str(cv_splits)
+control <- trainControl(method = "cv", number = 5)
 #Report results on test data
 ```
 
@@ -117,8 +124,14 @@ test_y <- train$readmit30
 
 ### Logistic Regression
 ```{r}
-cv.glmmod <- cv.glmnet(as.matrix(train_x), y=train_y, alpha=1, nfolds = 5)
-plot(cv.glmmod)
+set.seed(123)
+cv.glmmod <- cv.glmnet(x = train_x, y=train_y, alpha=1, family = "binomial", nfolds = 5)
+
+log.predict <- as.numeric(predict(cv.glmmod, newx = as.matrix(test_x), s = "lambda.min", type = "class"))
+#compare predictions to test data
+sum(log.predict == test_y) / length(test_y)
+#confusion matrix 
+table(log.predict, test_y)
 ```
 
 
@@ -126,23 +139,64 @@ plot(cv.glmmod)
 ### Classification Trees
 
 ```{r}
-#Example in chapter 8
+#Build base model
+tree.model <- tree(readmit30~., data = train)
+#tune under cross validation for number of nodes
+cv.model <- cv.tree(object = tree.model, K = 5)
+#Decide best size (# of nodes)
+best.size <- cv.model$size[which(cv.model$dev==min(cv.model$dev))]
+#prune based on best.size
+cv.model.pruned <- prune.misclass(tree.model, best=best.size)
+#predict with prune model
+tree.predict <- predict(cv.model.pruned, as.data.frame(test_x), type="class")
 
-
-cv.tree
+plot(cv.model.pruned)
+text(cv.model.pruned)
+#Results
+sum(tree.predict == test_y)/ length(test_y)
+table(tree.predict, test_y)
 ```
 
 
 ### Bagging
 ```{r}
-#Chapter 8
+set.seed(123)
+#Random forest function but mtry = number of explanatory variables
+bag_grid <- expand.grid(vars = c(1,2,3,4,5,6))
+caret::modelLookup(model = "bag")
+caret::modelLookup(model = "gbm")
+
+bag.cv <- train(readmit30~., data = train, method = "bag", trControl = control, tuneGrid = bag_grid)
+bag.cv
+bag(test_x, bagControl = ())
+
+
+
+
+bag1 <- bagging(readmit30~., train, nbagg = 25)
+
 ```
 
 
 
 ### Random forests
 ```{r}
-#Chapter 8
+set.seed(123)
+#possible values of mtry
+rf_grid <- expand.grid(mtry= c(1,2,3,4,5,6))
+#train under cv and possible mtry
+rf <- train(readmit30~., data = train, method = "rf", tuneGrid = rf_grid, trControl = control)
+#besttune for mtry value
+final <- randomForest(readmit30~., data = train, mtry = as.numeric(rf$bestTune[1]))
 
+#Predict
+rf.predict <- predict(final, newdata = as.data.frame(test_x), type = "class")
+
+#Results
+sum(rf.predict == test_y)/length(test_y)
+table(tree.predict, test_y)
 ```
+
+
+
 
